@@ -1,0 +1,14 @@
+[
+  {
+    "id": "sample-jd-001",
+    "title": "Senior Full Stack Engineer",
+    "company": "TechNova Inc.",
+    "raw_jd": "We are looking for a Senior Full Stack Engineer to join our product team. You will be responsible for building scalable web applications using React and Node.js. The ideal candidate has strong experience with TypeScript, PostgreSQL, and cloud infrastructure (AWS or GCP). Experience with Docker, Kubernetes, and CI/CD pipelines is required. You should have at least 4 years of full-stack development experience. Familiarity with GraphQL, Redis, and microservices architecture is a plus. A bachelor's degree in Computer Science or related field is preferred."
+  },
+  {
+    "id": "sample-jd-002",
+    "title": "Machine Learning Engineer",
+    "company": "DataMind AI",
+    "raw_jd": "DataMind AI is hiring a Machine Learning Engineer. Required: Strong Python skills, experience with PyTorch or TensorFlow, knowledge of NLP and LLMs, 3+ years in ML engineering. You must have experience deploying ML models to production using FastAPI or Flask, and familiarity with MLflow or similar experiment tracking. Preferred: Experience with LangChain, vector databases (Pinecone/ChromaDB), AWS SageMaker, and RAG pipelines. A Master's or PhD in AI/ML is preferred."
+  }
+]

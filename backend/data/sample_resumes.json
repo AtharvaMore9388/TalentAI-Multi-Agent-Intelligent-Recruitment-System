@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Priya Sharma",
+    "email": "priya.sharma@email.com",
+    "raw_resume": "Priya Sharma | priya.sharma@email.com | +91-9876543210\n\nSUMMARY\nSenior Full Stack Developer with 6 years of experience building enterprise-grade web applications. Passionate about scalable architecture and developer experience.\n\nSKILLS\nLanguages: JavaScript, TypeScript, Python\nFrontend: React, Next.js, Redux, Tailwind CSS\nBackend: Node.js, Express, FastAPI\nDatabases: PostgreSQL, MongoDB, Redis\nCloud: AWS (EC2, S3, Lambda, RDS), Docker, Kubernetes\nTools: Git, GitHub Actions, Jenkins, Terraform\nOther: GraphQL, REST APIs, Microservices\n\nEXPERIENCE\nSenior Software Engineer — Infosys (2021–Present)\n- Led development of a React/Node.js e-commerce platform serving 500K+ users\n- Implemented CI/CD pipelines with GitHub Actions and Docker\n- Migrated monolith to microservices architecture on AWS\n\nFull Stack Developer — Wipro (2018–2021)\n- Built internal HR tools using React and PostgreSQL\n- Integrated AWS S3 for document storage\n\nEDUCATION\nB.Tech Computer Science — BITS Pilani, 2018"
+  },
+  {
+    "name": "Arjun Mehta",
+    "email": "arjun.mehta@email.com",
+    "raw_resume": "Arjun Mehta\narjun.mehta@email.com\n\nPROFILE\nFull Stack Developer with 3 years experience in web development. Good understanding of React and Node.js. Looking to grow into senior role.\n\nTECHNICAL SKILLS\n- React, JavaScript, HTML, CSS\n- Node.js, Express.js\n- MySQL, basic PostgreSQL\n- Git, GitHub\n- AWS basics (S3 only)\n\nWORK EXPERIENCE\nJunior Developer — StartupXYZ (2021-2023)\n- Developed React frontend components\n- Built REST APIs with Node.js\n- Maintained MySQL database\n\nWeb Developer Intern — ABC Corp (2020-2021)\n- HTML/CSS/JS landing pages\n\nEDUCATION\nBCA — Mumbai University, 2020"
+  },
+  {
+    "name": "Aisha Patel",
+    "email": "aisha.patel@email.com",
+    "raw_resume": "AISHA PATEL | aisha.patel@email.com | LinkedIn: /in/aishapatel\n\nSENIOR ML ENGINEER | NLP SPECIALIST\n\nSUMMARY\nMachine Learning Engineer with 5 years of experience specializing in NLP, LLMs, and production ML systems. Published researcher with 2 papers on transformer architectures.\n\nSKILLS\n• Python, PyTorch, TensorFlow, Hugging Face Transformers\n• LLMs: Fine-tuning GPT, BERT, LLaMA; Prompt Engineering, RAG\n• LangChain, ChromaDB, Pinecone, FAISS\n• FastAPI, Docker, Kubernetes\n• AWS SageMaker, MLflow, DVC\n• SQL, MongoDB\n\nEXPERIENCE\nML Engineer — Google India (2022–Present)\n- Built production RAG pipeline reducing support ticket resolution by 40%\n- Fine-tuned LLaMA-2 for domain-specific NLP tasks\n- Deployed models via FastAPI on AWS SageMaker\n\nML Research Engineer — IIT Bombay AI Lab (2019–2022)\n- Research on BERT-based NER models\n- Co-authored paper on efficient transformer fine-tuning\n\nEDUCATION\nM.Tech AI — IIT Bombay, 2019\nB.Tech CSE — VIT Vellore, 2017"
+  },
+  {
+    "name": "Rahul Desai",
+    "email": "rahul.desai@email.com",
+    "raw_resume": "Rahul Desai | rahul.desai@email.com\n\nData Scientist / ML Engineer\n4 years experience in machine learning and data science.\n\nSkills:\nPython, scikit-learn, basic PyTorch, Pandas, NumPy\nSQL, Tableau, Power BI\nFlask (basic API deployment)\nGit\n\nExperience:\nData Scientist — Reliance Jio (2020-2024)\n- Built customer churn prediction models (scikit-learn)\n- Created dashboards in Tableau\n- Some experience with NLP (text classification with BERT)\n\nEducation:\nMBA (Analytics) — NMIMS, 2020\nB.Sc Mathematics — Delhi University, 2018\n\nNote: Limited experience with production ML deployment and LLMs."
+  },
+  {
+    "name": "Kavya Reddy",
+    "email": "kavya.reddy@email.com",
+    "raw_resume": "Kavya Reddy | kavya.reddy@email.com | GitHub: github.com/kavyareddy\n\nFull Stack Engineer | Cloud Specialist\n\nAbout Me:\n7 years of experience building distributed systems and cloud-native applications. Expert in TypeScript, React, and AWS. Kubernetes-certified (CKA). Contributed to multiple open source projects.\n\nCore Skills:\nTypeScript, JavaScript, Python\nReact, Next.js, Vue.js\nNode.js, GraphQL, REST\nPostgreSQL, Redis, Elasticsearch\nAWS (Solutions Architect Associate), GCP\nDocker, Kubernetes (CKA certified), Terraform, Helm\nCI/CD: GitHub Actions, ArgoCD, Jenkins\nMicroservices, Event-driven architecture, Kafka\n\nExperience:\nLead Engineer — Razorpay (2020–Present)\n- Architected and led team of 8 building payment microservices\n- Reduced infrastructure cost 30% via Kubernetes optimization\n- Implemented real-time event streaming with Kafka\n\nFull Stack Developer — Zomato (2017-2020)\n- React/TypeScript frontend development\n- PostgreSQL database design and optimization\n\nEducation:\nB.Tech CSE — NIT Warangal, 2017\nCertifications: AWS SAA, CKA"
+  },
+  {
+    "name": "Siddharth Nair",
+    "email": "siddharth.nair@email.com",
+    "raw_resume": "Siddharth Nair\nEmail: siddharth.nair@email.com\n\nFreshly graduated software engineer, 1 year internship experience.\n\nSkills: Python, Java, basic React, HTML/CSS, Git\n\nInternship:\nSoftware Intern — TCS (2023, 6 months)\n- Worked on Java Spring Boot backend\n- Basic React UI components\n\nInternship:\nWeb Dev Intern — Local Startup (2022, 3 months)\n- WordPress site maintenance\n\nEducation:\nB.E. Information Technology — VJTI Mumbai, 2023"
+  }
+]
