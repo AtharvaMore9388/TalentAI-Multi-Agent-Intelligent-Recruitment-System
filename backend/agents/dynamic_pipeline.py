@@ -413,9 +413,9 @@ async def run_dynamic_recruitment_pipeline(
     ), None
     await asyncio.sleep(0.3)
 
-    # Evaluation Agent identifies substandard candidates
-    critic_rejected = [c for c in initial_shortlist if not c["is_compliant"]]
-    approved_candidates = [c for c in initial_shortlist if c["is_compliant"]]
+    # Evaluation Agent identifies substandard candidates (must have 0 missing mandatory skills)
+    critic_rejected = [c for c in initial_shortlist if not c["is_compliant"] or len(c.get("missing_mandatory", [])) > 0]
+    approved_candidates = [c for c in initial_shortlist if c["is_compliant"] and len(c.get("missing_mandatory", [])) == 0]
 
     initial_shortlist_ids = {c["id"] for c in initial_shortlist}
     # Dynamic replanning is required whenever the critic challenges candidates on the shortlist
@@ -517,11 +517,11 @@ async def run_dynamic_recruitment_pipeline(
     final_shortlist_ids = {c["id"] for c in final_shortlist}
 
     for c in scored_candidates:
-        if c["is_compliant"] and c["id"] in final_shortlist_ids:
-            # Fully compliant AND in final shortlist → APPROVED
+        if c["is_compliant"] and len(c.get("missing_mandatory", [])) == 0 and c["id"] in final_shortlist_ids:
+            # Fully compliant (100% mandatory met) AND in final shortlist → APPROVED
             authoritative_approved.append(c)
-        elif c["is_compliant"] and c["id"] not in final_shortlist_ids:
-            # Fully compliant but not in top-N shortlist (e.g. ranked 4th) → CONDITIONAL
+        elif c["is_compliant"] and len(c.get("missing_mandatory", [])) == 0 and c["id"] not in final_shortlist_ids:
+            # Fully compliant but outside top-N shortlist (e.g. ranked 4th) → CONDITIONAL
             authoritative_conditional.append(c)
             rejection_reasons.append(f"{c['name']}: Compliant but outside top-{top_n} shortlist — held in conditional review.")
         elif (len(c["missing_mandatory"]) <= 2 or c["score"] >= 50.0) and c["id"] in final_shortlist_ids:
@@ -536,13 +536,6 @@ async def run_dynamic_recruitment_pipeline(
             authoritative_rejected.append(c)
             rejection_reasons.append(f"{c['name']}: Non-compliant with mandatory requirements ({', '.join(c['missing_mandatory']) or 'Insufficient criteria'}).")
 
-    # Safety Guarantee: If no candidate was 100% compliant, promote the highest-scoring
-    # conditional candidate if they demonstrated strong technical merit (score >= 60.0)
-    if len(authoritative_approved) == 0 and len(authoritative_conditional) > 0:
-        if authoritative_conditional[0]["score"] >= 60.0:
-            promoted = authoritative_conditional.pop(0)
-            promoted["status"] = "APPROVED (ADAPTIVE)"
-            authoritative_approved.append(promoted)
 
     yield AgentMessage(
         agent="Orchestrator",
