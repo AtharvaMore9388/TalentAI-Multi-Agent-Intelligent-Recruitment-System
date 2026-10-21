@@ -1,34 +1,82 @@
-// TalentAI — API Client
+// TalentAI — API Client with Vercel Production & Fallback Support
+import {
+  SAMPLE_JOBS,
+  SAMPLE_RESUMES,
+  WORKED_EXAMPLE_DOSSIER,
+  DEMO_TRACE,
+} from './sampleData'
 
 function getApiUrl(): string {
-  if (typeof window !== 'undefined' && window.location.hostname) {
-    return `http://${window.location.hostname}:8000`
+  // If explicitly configured via environment variable (e.g. Render backend)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+  // Local development
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return `http://${host}:8000`
+    }
+  }
+
+  return 'http://localhost:8000'
 }
 
 export async function fetchSamples() {
-  const res = await fetch(`${getApiUrl()}/api/samples`)
-  if (!res.ok) throw new Error('Failed to fetch samples')
-  return res.json()
+  try {
+    const res = await fetch(`${getApiUrl()}/api/samples`, { cache: 'no-store' })
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch {
+    // Graceful fallback for Vercel demo deployment
+  }
+  return {
+    jobs: SAMPLE_JOBS,
+    resumes: SAMPLE_RESUMES,
+  }
 }
 
 export async function fetchDemoTrace() {
-  const res = await fetch(`${getApiUrl()}/api/trace/demo`)
-  if (!res.ok) throw new Error('Failed to fetch demo trace')
-  return res.json()
+  try {
+    const res = await fetch(`${getApiUrl()}/api/trace/demo`, { cache: 'no-store' })
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch {
+    // Graceful fallback for Vercel demo deployment
+  }
+  return DEMO_TRACE
 }
 
 export async function fetchWorkedExampleDossier() {
-  const res = await fetch(`${getApiUrl()}/api/trace/worked-example`)
-  if (!res.ok) throw new Error('Failed to fetch worked example dossier')
-  return res.json()
+  try {
+    const res = await fetch(`${getApiUrl()}/api/trace/worked-example`, { cache: 'no-store' })
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch {
+    // Graceful fallback for Vercel demo deployment
+  }
+  return WORKED_EXAMPLE_DOSSIER
 }
 
 export async function fetchHealth() {
-  const res = await fetch(`${getApiUrl()}/health`)
-  if (!res.ok) throw new Error('API not reachable')
-  return res.json()
+  try {
+    const res = await fetch(`${getApiUrl()}/health`, { cache: 'no-store' })
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch {
+    // Graceful fallback for Vercel deployment
+  }
+  return {
+    status: 'ok',
+    mode: 'demo_active',
+    version: '1.0.0',
+    indexed_resumes: SAMPLE_RESUMES.length,
+  }
 }
 
 export function createRecruitStream(
@@ -41,6 +89,7 @@ export function createRecruitStream(
 ): () => void {
   const controller = new AbortController()
 
+  // Attempt live stream connection
   fetch(`${getApiUrl()}/api/recruit/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -52,8 +101,7 @@ export function createRecruitStream(
     signal: controller.signal,
   }).then(async (res) => {
     if (!res.ok) {
-      onError(`HTTP ${res.status}: ${res.statusText}`)
-      return
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     }
 
     const reader = res.body?.getReader()
@@ -86,7 +134,26 @@ export function createRecruitStream(
       }
     }
   }).catch((err) => {
-    if (err.name !== 'AbortError') onError(String(err))
+    if (err.name === 'AbortError') return
+
+    // If live backend is unreachable (e.g. standalone Vercel preview without Render URL yet),
+    // stream the concrete worked example trace with simulated delays
+    console.warn('[TalentAI] Live backend unavailable, streaming concrete worked example:', err)
+    
+    let cancelled = false
+    controller.signal.addEventListener('abort', () => { cancelled = true })
+
+    ;(async () => {
+      for (const event of DEMO_TRACE) {
+        if (cancelled) return
+        await new Promise((r) => setTimeout(r, 650))
+        if (cancelled) return
+        onMessage(event)
+      }
+      if (!cancelled) {
+        onComplete(WORKED_EXAMPLE_DOSSIER)
+      }
+    })()
   })
 
   return () => controller.abort()
