@@ -1,21 +1,32 @@
 // TalentAI — API Client
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+function getApiUrl(): string {
+  if (typeof window !== 'undefined' && window.location.hostname) {
+    return `http://${window.location.hostname}:8000`
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+}
 
 export async function fetchSamples() {
-  const res = await fetch(`${API_URL}/api/samples`)
+  const res = await fetch(`${getApiUrl()}/api/samples`)
   if (!res.ok) throw new Error('Failed to fetch samples')
   return res.json()
 }
 
 export async function fetchDemoTrace() {
-  const res = await fetch(`${API_URL}/api/trace/demo`)
+  const res = await fetch(`${getApiUrl()}/api/trace/demo`)
   if (!res.ok) throw new Error('Failed to fetch demo trace')
   return res.json()
 }
 
+export async function fetchWorkedExampleDossier() {
+  const res = await fetch(`${getApiUrl()}/api/trace/worked-example`)
+  if (!res.ok) throw new Error('Failed to fetch worked example dossier')
+  return res.json()
+}
+
 export async function fetchHealth() {
-  const res = await fetch(`${API_URL}/health`)
+  const res = await fetch(`${getApiUrl()}/health`)
   if (!res.ok) throw new Error('API not reachable')
   return res.json()
 }
@@ -25,12 +36,12 @@ export function createRecruitStream(
   resumes: string[],
   topN: number,
   onMessage: (msg: object) => void,
-  onComplete: () => void,
+  onComplete: (dossier?: any) => void,
   onError: (err: string) => void,
 ): () => void {
   const controller = new AbortController()
 
-  fetch(`${API_URL}/api/recruit/stream`, {
+  fetch(`${getApiUrl()}/api/recruit/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -65,7 +76,7 @@ export function createRecruitStream(
           if (!data) continue
           try {
             const parsed = JSON.parse(data)
-            if (parsed.type === 'complete') { onComplete(); return }
+            if (parsed.type === 'complete') { onComplete(parsed.dossier); return }
             if (parsed.type === 'error') { onError(parsed.message); return }
             onMessage(parsed)
           } catch {

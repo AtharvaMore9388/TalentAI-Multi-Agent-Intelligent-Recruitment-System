@@ -217,21 +217,28 @@ async def run_recruitment_pipeline(
 
         # ── Evaluation ────────────────────────────────────────────────
         await asyncio.sleep(0)
-        approved, eval_passed, eval_msg = evaluate_shortlist(
+        eval_result, eval_msg = evaluate_shortlist(
             job=job, shortlisted=shortlisted, llm=llm
         )
         state.messages.append(eval_msg)
         yield eval_msg
 
-        rejected = [mc for mc in shortlisted if mc not in approved]
+        approved = eval_result.get("approved_candidates", [])
+        conditional = eval_result.get("conditional_candidates", [])
+        rejected = eval_result.get("rejected_candidates", [])
+        eval_summary = eval_result.get("evaluation_summary", {})
+        eval_passed = eval_summary.get("passed", False)
+
+        state.shortlisted = approved
+        state.conditionally_eligible = conditional
+        state.rejected = rejected
 
         if eval_passed or replan_round >= MAX_REPLAN_ROUNDS:
-            # Accept result
             state.evaluation_passed = eval_passed
             if not eval_passed:
                 yield _log(state, "Orchestrator", "decision",
                            f"Max replan rounds ({MAX_REPLAN_ROUNDS}) reached. "
-                           f"Accepting {len(approved)} available candidate(s) despite evaluation concerns.")
+                           f"Shortlist summary: {len(approved)} approved, {len(conditional)} conditional, {len(rejected)} rejected.")
             else:
                 yield _log(state, "Orchestrator", "decision",
                            f"✅ EvaluationAgent approved {len(approved)} candidate(s). "
@@ -243,7 +250,7 @@ async def run_recruitment_pipeline(
         replan_round += 1
 
         yield _log(state, "Orchestrator", "conflict",
-                   f"⚠️ EvaluationAgent REJECTED shortlist (round {replan_round}). "
+                   f"⚠️ EvaluationAgent CHALLENGED shortlist (round {replan_round}). "
                    f"Orchestrator initiating replanning analysis.")
 
         action, reasoning = orchestrator_decide_replan(
@@ -259,48 +266,62 @@ async def run_recruitment_pipeline(
         if action == "escalate":
             yield _log(state, "Orchestrator", "decision",
                        "🚨 Escalating to human review — no suitable candidates found with current criteria.")
-            approved = approved  # accept what we have
-            rejected = [mc for mc in shortlisted if mc not in approved]
             break
 
         elif action == "accept_partial":
             yield _log(state, "Orchestrator", "decision",
-                       f"Accepting {len(approved)} partially approved candidate(s).")
+                       f"Accepting {len(approved)} fully approved candidate(s) and {len(conditional)} conditional candidate(s).")
             break
 
         elif action in ("replan_relaxed", "replan_strict"):
             relaxed = (action == "replan_relaxed")
             state.relaxed_requirements = relaxed
-            mode = "RELAXED preferred requirements" if relaxed else "STRICT mandatory-only focus"
+            mode = "RELAXED preferred requirements (mandatory requirements strictly preserved)" if relaxed else "STRICT mandatory-only focus"
             yield _log(state, "Orchestrator", "replan",
                        f"🔄 Rerunning MatchingAgent with {mode}.")
             continue
 
     # ── STEP 5: Communication Generation ─────────────────────────────────
     await asyncio.sleep(0)
-    approved_final = [mc for mc in state.shortlisted if not mc.missing_mandatory or state.relaxed_requirements]
-    rejected_final = [mc for mc in state.shortlisted if mc not in approved_final]
+    # Approved candidates are strictly authoritative from EvaluationAgent
+    approved_final = state.shortlisted
+    # Non-approved are conditional and rejected
+    rejected_final = state.conditionally_eligible + state.rejected
 
     yield _log(state, "Orchestrator", "decision",
                f"Delegating to CommunicationAgent: {len(approved_final)} invitation(s), "
-               f"{len(rejected_final)} rejection(s).")
+               f"{len(rejected_final)} notice(s).")
 
-    comms, comm_msg = generate_communications(
-        job=job,
-        approved=approved_final,
-        rejected=rejected_final,
-        llm=llm,
-    )
-    state.final_communications = comms
-    state.messages.append(comm_msg)
-    yield comm_msg
+    try:
+        comms, comm_msg = generate_communications(
+            job=job,
+            approved=approved_final,
+            rejected=rejected_final,
+            llm=llm,
+        )
+        state.final_communications = comms
+        state.messages.append(comm_msg)
+        yield comm_msg
+    except Exception as comm_err:
+        # Communication-generation failure must never clear the approved shortlist!
+        fail_msg = _log(state, "CommunicationAgent", "conflict",
+                        f"⚠️ Communication generation failed: {comm_err}. Preserving approved shortlist.")
+        yield fail_msg
 
     # ── STEP 6: Pipeline Complete ─────────────────────────────────────────
     state.status = "completed"
+    if len(approved_final) >= 1:
+        state.final_status = "COMPLETED_SUCCESS"
+    elif len(state.conditionally_eligible) >= 1:
+        state.final_status = "COMPLETED_PARTIAL"
+    else:
+        state.final_status = "COMPLETED_NO_MATCH"
+
     yield _log(state, "Orchestrator", "result",
                f"🎉 Recruitment pipeline complete. "
                f"Processed {len(state.candidates)} candidates. "
-               f"Shortlisted {len(state.shortlisted)}. "
-               f"Approved: {len(approved_final)}. "
+               f"Approved: {len(state.shortlisted)}. "
+               f"Conditional: {len(state.conditionally_eligible)}. "
+               f"Rejected: {len(state.rejected)}. "
                f"Replan rounds: {state.replan_count}. "
                f"Requirement relaxation: {'YES' if state.relaxed_requirements else 'NO'}.")

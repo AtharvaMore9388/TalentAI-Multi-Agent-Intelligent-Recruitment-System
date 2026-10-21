@@ -28,5 +28,15 @@
     "name": "Siddharth Nair",
     "email": "siddharth.nair@email.com",
     "raw_resume": "Siddharth Nair\nEmail: siddharth.nair@email.com\n\nFreshly graduated software engineer, 1 year internship experience.\n\nSkills: Python, Java, basic React, HTML/CSS, Git\n\nInternship:\nSoftware Intern — TCS (2023, 6 months)\n- Worked on Java Spring Boot backend\n- Basic React UI components\n\nInternship:\nWeb Dev Intern — Local Startup (2022, 3 months)\n- WordPress site maintenance\n\nEducation:\nB.E. Information Technology — VJTI Mumbai, 2023"
+  },
+  {
+    "name": "Rohan Verma",
+    "email": "rohan.verma@email.com",
+    "raw_resume": "Rohan Verma | rohan.verma@email.com | +91-9876543211\n\nSUMMARY\nPython Software Developer with 1.5 years experience in building backend applications, REST APIs, and machine learning pipelines.\n\nSKILLS\n- Languages: Python, SQL\n- Frameworks: Django, Flask, FastAPI\n- ML / Data: Machine Learning, Deep Learning fundamentals, PyTorch, Scikit-learn, Pandas, NumPy\n- Tools: Git, GitHub, REST APIs, Docker\n\nEXPERIENCE\nAssociate Software Engineer — DataSoft (2023-Present, 1.5 years)\n- Developed REST APIs using Django and Flask\n- Integrated PostgreSQL databases with backend services\n- Collaborated on machine learning model integration\n\nEDUCATION\nB.Tech Computer Science — Pune University, 2023"
+  },
+  {
+    "name": "Aarav Gupta",
+    "email": "aarav.gupta@email.com",
+    "raw_resume": "Aarav Gupta | aarav.gupta@email.com\n\nPROFILE\nEntry-level Python & AI Developer with 6 months internship experience.\n\nSKILLS\n- Python, SQL, database management\n- Machine Learning, Deep Learning fundamentals\n- Django, Flask, REST APIs\n- Git, GitHub, Data Structures\n- TensorFlow, Pandas, NumPy, Docker\n\nINTERNSHIP\nPython Developer Intern — TechSolutions (6 months)\n- Assisted in building Flask REST APIs and SQL databases\n- Trained baseline ML models with TensorFlow and Pandas\n\nEDUCATION\nB.E. Information Technology — Mumbai University, 2024"
   }
 ]

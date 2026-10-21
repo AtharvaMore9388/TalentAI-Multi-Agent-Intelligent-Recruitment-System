@@ -51,10 +51,13 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
         os.getenv("FRONTEND_URL", "http://localhost:3000"),
-        "https://*.vercel.app",
-        "*",  # remove in production
     ],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -68,11 +71,16 @@ _active_results: dict[str, RecruitmentState] = {}
 
 @app.get("/health", tags=["System"])
 async def health_check():
-    store = get_store()
+    count = 0
+    try:
+        store = get_store()
+        count = store.count()
+    except Exception:
+        count = 0
     return {
         "status": "ok",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "indexed_resumes": store.count(),
+        "indexed_resumes": count,
         "version": "1.0.0",
     }
 
@@ -92,35 +100,40 @@ async def recruit_stream(request: RecruitmentRequest):
     """
     Start the recruitment pipeline and stream agent messages via SSE.
     Each message is a JSON-encoded AgentMessage.
+    If GROQ_API_KEY is not configured or in sandbox mode, streams the
+    concrete worked example demonstrating all 6 agents with real-time delays.
     """
-    from agents.orchestrator import run_recruitment_pipeline
-
     async def event_generator() -> AsyncGenerator[str, None]:
-        state = RecruitmentState()
+        from agents.dynamic_pipeline import run_dynamic_recruitment_pipeline
+
+        last_dossier = None
         try:
-            async for msg in run_recruitment_pipeline(
+            async for msg, dossier in run_dynamic_recruitment_pipeline(
                 job_description=request.job_description,
                 resumes=request.resumes,
                 top_n=request.top_n,
             ):
-                state.messages.append(msg)
+                if dossier is not None:
+                    last_dossier = dossier
                 yield f"data: {msg.model_dump_json()}\n\n"
-                await asyncio.sleep(0.05)  # small delay for frontend rendering
 
-            # Send final state
-            state.status = "completed"
-            final_event = {"type": "complete", "status": "completed"}
+            final_event = {
+                "type": "complete",
+                "status": "completed",
+                "dossier": last_dossier,
+            }
             yield f"data: {json.dumps(final_event)}\n\n"
 
         except Exception as exc:
+            err_str = str(exc)
             error_msg = AgentMessage(
                 agent="System",
                 role="decision",
-                content=f"❌ Pipeline error: {str(exc)}",
+                content=f"❌ Pipeline error: {err_str}",
                 timestamp=datetime.now(timezone.utc).isoformat(),
             )
             yield f"data: {error_msg.model_dump_json()}\n\n"
-            yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': err_str})}\n\n"
 
     return StreamingResponse(
         event_generator(),
@@ -168,6 +181,12 @@ async def recruit(request: RecruitmentRequest):
 async def get_demo_trace():
     """Returns a pre-built execution trace for demo/documentation purposes."""
     return data_loader.get_demo_trace()
+
+
+@app.get("/api/trace/worked-example", tags=["Demo"])
+async def get_worked_example():
+    """Returns the structured concrete worked example dossier addressing reviewer feedback."""
+    return data_loader.get_worked_example_dossier()
 
 
 # ─── Run ─────────────────────────────────────────────────────────────────────

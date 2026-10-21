@@ -57,7 +57,7 @@ def analyze_job(raw_jd: str, llm) -> tuple[JobDescription, AgentMessage]:
     result = crew.kickoff()
     raw_output = str(result)
 
-    jd_data = _parse_jd_json(raw_output)
+    jd_data = _parse_jd_json(raw_output, raw_jd=raw_jd)
     job = JobDescription(
         id=str(uuid.uuid4()),
         raw_jd=raw_jd,
@@ -77,16 +77,51 @@ def analyze_job(raw_jd: str, llm) -> tuple[JobDescription, AgentMessage]:
     return job, msg
 
 
-def _parse_jd_json(text: str) -> dict:
+def _extract_exp_range(text: str) -> tuple[float, Optional[float], str]:
+    """Extract experience range or minimum from text."""
+    range_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(\d+(?:\.\d+)?)\s*(?:years?|yrs?)(?:\s+of)?(?:\s+experience)?", text, re.IGNORECASE)
+    if range_match:
+        min_e = float(range_match.group(1))
+        max_e = float(range_match.group(2))
+        return min_e, max_e, f"{range_match.group(1)}-{range_match.group(2)} years experience"
+    plus_match = re.search(r"(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)(?:\s+of)?(?:\s+experience)?", text, re.IGNORECASE)
+    if plus_match:
+        min_e = float(plus_match.group(1))
+        return min_e, None, f"{plus_match.group(1)}+ years experience"
+    return 0.0, None, "0+ years experience"
+
+
+def _parse_jd_json(text: str, raw_jd: str = "") -> dict:
+    source_text = text + "\n" + raw_jd
+    min_exp, max_exp, exp_text = _extract_exp_range(source_text)
+
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
         try:
             data = json.loads(match.group())
+            mand = data.get("mandatory_requirements", [])
+            pref = data.get("preferred_requirements", [])
+            # Filter out fabricated experience entries like "2+ years" if raw JD states otherwise
+            cleaned_mand = []
+            for m in mand:
+                if re.search(r"\d+\+?\s*(?:years?|yrs?)", m, re.IGNORECASE):
+                    continue
+                cleaned_mand.append(m)
+
+            cleaned_pref = []
+            for p in pref:
+                if re.search(r"\d+\+?\s*(?:years?|yrs?)", p, re.IGNORECASE):
+                    continue
+                cleaned_pref.append(p)
+
             return {
                 "title": data.get("title", "Unknown Position"),
                 "company": data.get("company", "Unknown Company"),
-                "mandatory_requirements": data.get("mandatory_requirements", []),
-                "preferred_requirements": data.get("preferred_requirements", []),
+                "mandatory_requirements": cleaned_mand,
+                "preferred_requirements": cleaned_pref,
+                "min_experience_years": min_exp,
+                "max_experience_years": max_exp,
+                "experience_requirement_text": exp_text,
                 "description": data.get("description", ""),
             }
         except (json.JSONDecodeError, ValueError):
@@ -97,5 +132,8 @@ def _parse_jd_json(text: str) -> dict:
         "company": "Unknown Company",
         "mandatory_requirements": [],
         "preferred_requirements": [],
+        "min_experience_years": min_exp,
+        "max_experience_years": max_exp,
+        "experience_requirement_text": exp_text,
         "description": text[:300],
     }

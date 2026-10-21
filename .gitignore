@@ -18,8 +18,12 @@ htmlcov/
 .coverage
 
 # ChromaDB local store
+chroma_store/
 backend/chroma_store/
 *.sqlite3
+
+# Temporary Office / Export files
+*.docx
 
 # Node / Next.js
 frontend/node_modules/

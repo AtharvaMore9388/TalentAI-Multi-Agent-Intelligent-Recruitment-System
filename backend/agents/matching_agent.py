@@ -60,6 +60,8 @@ def match_candidates(
             candidate_experience_years=cand.experience_years,
             mandatory_requirements=", ".join(mandatory),
             preferred_requirements=", ".join(preferred),
+            min_experience_years=job.min_experience_years,
+            max_experience_years=job.max_experience_years,
         )
         parsed = _parse_score_result(result, cand, mandatory, preferred)
         scored.append(parsed)

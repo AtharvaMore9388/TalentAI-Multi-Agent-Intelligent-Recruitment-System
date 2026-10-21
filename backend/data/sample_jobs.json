@@ -10,5 +10,11 @@
     "title": "Machine Learning Engineer",
     "company": "DataMind AI",
     "raw_jd": "DataMind AI is hiring a Machine Learning Engineer. Required: Strong Python skills, experience with PyTorch or TensorFlow, knowledge of NLP and LLMs, 3+ years in ML engineering. You must have experience deploying ML models to production using FastAPI or Flask, and familiarity with MLflow or similar experiment tracking. Preferred: Experience with LangChain, vector databases (Pinecone/ChromaDB), AWS SageMaker, and RAG pipelines. A Master's or PhD in AI/ML is preferred."
+  },
+  {
+    "id": "sample-jd-003",
+    "title": "Python Software Developer – AI/ML",
+    "company": "AI Labs",
+    "raw_jd": "Python Software Developer – AI/ML\nPune, India\n\nFull-time · Entry-level\n\nJob Description:\nWe are looking for a Python Software Developer with knowledge of artificial intelligence, machine learning, data structures, and software development. The candidate will help build intelligent applications, develop APIs, process datasets, and collaborate with engineering teams.\n\nRequired skills:\n- Python programming\n- Machine Learning\n- Deep Learning fundamentals\n- SQL\n- Database management\n- REST APIs\n- Flask or Django\n- Git\n- Data Structures\n\nPreferred skills:\n- Scikit-learn\n- TensorFlow or PyTorch\n- Pandas and NumPy\n- Generative AI or Large Language Models\n- Docker and cloud platforms\n\nEligibility:\n- Bachelor's degree in Computer Science, IT, or a related field\n- 0–2 years of experience\n- Internships and academic projects are accepted"
   }
 ]

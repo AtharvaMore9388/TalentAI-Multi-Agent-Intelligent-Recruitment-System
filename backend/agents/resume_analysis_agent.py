@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import uuid
 from crewai import Agent, Task, Crew
-from crewai_tools import BaseTool
 from lib.models import Candidate, AgentMessage
 from datetime import datetime, timezone
 
@@ -27,6 +26,9 @@ def get_resume_analysis_agent(llm) -> Agent:
         verbose=True,
         allow_delegation=False,
     )
+
+
+from lib.experience_parser import extract_candidate_experience
 
 
 def analyze_resume(raw_resume: str, llm) -> tuple[Candidate, AgentMessage]:
@@ -56,7 +58,7 @@ def analyze_resume(raw_resume: str, llm) -> tuple[Candidate, AgentMessage]:
     raw_output = str(result)
 
     # Parse JSON from output
-    candidate_data = _parse_json_safely(raw_output)
+    candidate_data = _parse_json_safely(raw_output, raw_resume=raw_resume)
     candidate = Candidate(
         id=str(uuid.uuid4()),
         raw_resume=raw_resume,
@@ -66,27 +68,31 @@ def analyze_resume(raw_resume: str, llm) -> tuple[Candidate, AgentMessage]:
     msg = AgentMessage(
         agent="ResumeAnalysisAgent",
         role="action",
-        content=f"Analyzed resume for {candidate.name} — extracted {len(candidate.skills)} skills, {candidate.experience_years} yrs exp",
+        content=f"Analyzed resume for {candidate.name} — extracted {len(candidate.skills)} skills, {candidate.experience_years} yrs exp (professional: {candidate.professional_experience_years}y, internship: {candidate.internship_experience_years}y)",
         timestamp=datetime.now(timezone.utc).isoformat(),
     )
     return candidate, msg
 
 
-def _parse_json_safely(text: str) -> dict:
-    """Extract and parse JSON from LLM output, with fallback."""
+def _parse_json_safely(text: str, raw_resume: str = "") -> dict:
+    """Extract and parse JSON from LLM output, with deterministic experience parsing."""
     import re
+    exp_info = extract_candidate_experience(raw_resume or text)
+    
     # Try to find JSON block
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
         try:
             data = json.loads(match.group())
-            # Normalize fields
             return {
                 "name": data.get("name", "Unknown"),
                 "email": data.get("email", "unknown@example.com"),
                 "phone": data.get("phone"),
                 "skills": data.get("skills", []),
-                "experience_years": float(data.get("experience_years", 0)),
+                "experience_years": exp_info["total_relevant_years"],
+                "professional_experience_years": exp_info["professional_years"],
+                "internship_experience_years": exp_info["internship_years"],
+                "experience_verified": exp_info["experience_verified"],
                 "education": data.get("education", ""),
                 "summary": data.get("summary", ""),
             }
@@ -99,7 +105,10 @@ def _parse_json_safely(text: str) -> dict:
         "email": f"candidate_{uuid.uuid4().hex[:6]}@example.com",
         "phone": None,
         "skills": [],
-        "experience_years": 0.0,
+        "experience_years": exp_info["total_relevant_years"],
+        "professional_experience_years": exp_info["professional_years"],
+        "internship_experience_years": exp_info["internship_years"],
+        "experience_verified": exp_info["experience_verified"],
         "education": "",
         "summary": text[:200],
     }
