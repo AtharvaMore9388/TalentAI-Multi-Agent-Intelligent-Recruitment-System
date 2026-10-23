@@ -265,12 +265,6 @@ Tests cover:
 
 ---
 
-## 👥 Team Members
-
-| Name | GitHub Username | Primary Role |
-|------|----------------|--------------|
-| Atharva More | @atharvamore | Orchestrator + Evaluation Agent |
-
 ---
 ## 📄 Documentation
 
