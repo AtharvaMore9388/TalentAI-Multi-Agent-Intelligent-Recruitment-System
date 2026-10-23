@@ -264,6 +264,11 @@ Tests cover:
 | Frontend | **Next.js 14** | App Router, TypeScript, SSE-compatible |
 
 ---
+## 📄 Documentation
+
+- [Design Document](docs/design_document.md)
+- [Execution Trace](docs/execution_trace.md)
+- [API Docs](http://localhost:8000/docs) (when running locally)
 
 ---
 
