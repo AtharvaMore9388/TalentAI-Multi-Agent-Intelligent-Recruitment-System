@@ -125,7 +125,7 @@ export function AdvantageSection() {
                 {item.subtitle}
               </div>
 
-              <
+              <h3
                 style={{
                   fontSize: 20,
                   fontWeight: 700,
